@@ -22,6 +22,8 @@ import {
   BarChart,
   AlertCircle,
   Share,
+  RotateCcw,
+  Calendar,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -38,6 +40,16 @@ import {
 } from "recharts";
 import apiClient from "@/lib/apiClient";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import ReviewAnswers from "@/components/ReviewAnswersPage";
+import DetailedAnalysis from "@/components/DetailedAnalysis";
 
 // Mock results data for the test
 
@@ -80,7 +92,10 @@ const TestResults = () => {
 
         const transformedResult = {
           score: apiData.score,
+          testName: apiData.test.title || "Test Name",
           totalQuestions: apiData.totalQuestions,
+          previousAttempts: apiData.previousAttempts,
+          questionsData: apiData.questionsData || [],
           changedAnswers: apiData.changedAnswers,
           scorePercent: apiData.scorePercent,
           correctAnswers: apiData.correctCount,
@@ -123,7 +138,9 @@ const TestResults = () => {
       }
     };
 
-    fetchTestHistory();
+    if (id) {
+      fetchTestHistory();
+    }
   }, [id]);
 
   const result = testResult;
@@ -188,12 +205,41 @@ const TestResults = () => {
             <ChevronLeft className="h-4 w-4 mr-1" />
             Test Details
           </Link>
-
           <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-brandIndigo to-brandPurple bg-clip-text text-transparent mb-2">
-              Your Test Results
-            </h1>
-            <p className="text-gray-600">JEE Full Mock Test 1</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-brandIndigo to-brandPurple bg-clip-text text-transparent mb-2">
+                  Your Test Results
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {result?.testName}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-3 mt-4 md:mt-0">
+                <Badge
+                  variant="outline"
+                  className="flex items-center space-x-1"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                  <span>
+                    {/* Attempt {result.attempt} of {result.maxAttempts} */}
+                  </span>
+                </Badge>
+
+                {/* {result.previousAttempts.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    Previous:{" "}
+                    {
+                      result.previousAttempts[
+                        result.previousAttempts.length - 1
+                      ].score
+                    }
+                    %
+                  </Badge>
+                )} */}
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -371,6 +417,9 @@ const TestResults = () => {
             </Card>
           </div>
 
+          {/* Previous Attempts History */}
+       
+
           <Tabs
             defaultValue={activeTab}
             onValueChange={setActiveTab}
@@ -394,6 +443,19 @@ const TestResults = () => {
                 className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-brandPurple"
               >
                 Question Analysis
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="review"
+                className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm data-[state=active]:text-brandPurple"
+              >
+                Review Answers
+              </TabsTrigger>
+              <TabsTrigger
+                value="detailed"
+                className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm data-[state=active]:text-brandPurple"
+              >
+                Detailed Analysis
               </TabsTrigger>
             </TabsList>
 
@@ -641,6 +703,14 @@ const TestResults = () => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+              <TabsContent value="review" className="mt-0">
+              <ReviewAnswers data={result.questionsData} />
+            </TabsContent>
+            
+            <TabsContent value="detailed" className="mt-0">
+              <DetailedAnalysis />
             </TabsContent>
           </Tabs>
 

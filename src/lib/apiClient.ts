@@ -1,11 +1,10 @@
 import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
 
-// const baseURL = "https://uat-backend.imageotory.in/api/v1";
-const baseURL = "http://localhost:5000/api/v1";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const apiClient = axios.create({
-  baseURL: baseURL,
+  baseURL: baseURL + "/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
@@ -39,7 +38,7 @@ apiClient.interceptors.response.use(
       try {
         store.setLoading(true);
         const refreshResponse = await axios.post(
-          baseURL+"/auth/refresh-tokens",
+          baseURL + "/api/v1/auth/refresh-tokens",
           { refreshToken: store.refreshToken }
         );
 
@@ -54,7 +53,7 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         console.error("🔁 Token refresh failed", refreshError);
         store.logout();
-        
+
         store.setLoading(false);
         return Promise.reject(refreshError);
       }

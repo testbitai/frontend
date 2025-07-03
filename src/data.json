@@ -1,0 +1,384 @@
+{
+    "success": true,
+    "status": 200,
+    "message": "Test result fetched successfully",
+    "data": {
+        "_id": "6862d81c54cf44455ea8c623",
+        "scorePercent": 40,
+        "totalQuestions": 10,
+        "correctCount": 5,
+        "incorrectCount": 4,
+        "skippedCount": 1,
+        "score": 16,
+        "totalTimeTaken": 227,
+        "attemptedAt": "2025-06-30T18:31:56.514Z",
+        "changedAnswers": {
+            "totalChanged": 1,
+            "correctAfterChange": 1
+        },
+        "test": {
+            "_id": "6862ab2b451150662f38d440",
+            "title": "JEE Main 2025 (22 Jan Shift 1) Math Full Mock",
+            "description": "JEE Main 2025 (22 Jan Shift 1) Previous Year Paper with Answer Keys - MathonGo",
+            "examType": "JEE",
+            "type": "fullMock",
+            "duration": 180,
+            "sections": [
+                {
+                    "subject": "Math",
+                    "totalQuestions": 10
+                }
+            ],
+            "createdBy": "6846d21e335b5de3bea53ef2",
+            "isPublished": true,
+            "isPurchased": false
+        },
+        "attemptedQuestions": [
+            {
+                "sectionIndex": 0,
+                "questionIndex": 0,
+                "selectedAnswer": "A",
+                "answerHistory": [
+                    "B",
+                    "A"
+                ],
+                "isCorrect": true,
+                "timeTaken": 208
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 1,
+                "selectedAnswer": "C",
+                "answerHistory": [
+                    "C"
+                ],
+                "isCorrect": true,
+                "timeTaken": 2
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 3,
+                "selectedAnswer": "B",
+                "answerHistory": [
+                    "B"
+                ],
+                "isCorrect": false,
+                "timeTaken": 4
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 4,
+                "selectedAnswer": "B",
+                "answerHistory": [
+                    "B"
+                ],
+                "isCorrect": false,
+                "timeTaken": 2
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 5,
+                "selectedAnswer": "D",
+                "answerHistory": [
+                    "D"
+                ],
+                "isCorrect": false,
+                "timeTaken": 2
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 6,
+                "selectedAnswer": "B",
+                "answerHistory": [
+                    "B"
+                ],
+                "isCorrect": false,
+                "timeTaken": 2
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 7,
+                "selectedAnswer": "A",
+                "answerHistory": [
+                    "A"
+                ],
+                "isCorrect": true,
+                "timeTaken": 5
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 8,
+                "selectedAnswer": "A",
+                "answerHistory": [
+                    "A"
+                ],
+                "isCorrect": true,
+                "timeTaken": 2
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 9,
+                "selectedAnswer": "A",
+                "answerHistory": [
+                    "A"
+                ],
+                "isCorrect": true,
+                "timeTaken": 0
+            }
+        ],
+        "questionsData": [
+            {
+                "id": 1,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "628",
+                    "812",
+                    "526",
+                    "784"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 208,
+                "difficulty": "Unknown",
+                "status": "correct"
+            },
+            {
+                "id": 2,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "1/2 + e",
+                    "3 + e",
+                    "3 − e",
+                    "2 + e"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 2,
+                "difficulty": "Unknown",
+                "status": "correct"
+            },
+            {
+                "id": 3,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "e^{8/5}",
+                    "e^{6/5}",
+                    "e^{2}",
+                    "e^{8}"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 4,
+                "difficulty": "Unknown",
+                "status": "incorrect"
+            },
+            {
+                "id": 4,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "19",
+                    "24",
+                    "21",
+                    "22"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 2,
+                "difficulty": "Unknown",
+                "status": "incorrect"
+            },
+            {
+                "id": 5,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "2",
+                    "1",
+                    "2π",
+                    "π"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 2,
+                "difficulty": "Unknown",
+                "status": "incorrect"
+            },
+            {
+                "id": 6,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "7",
+                    "4",
+                    "6",
+                    "5"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 2,
+                "difficulty": "Unknown",
+                "status": "incorrect"
+            },
+            {
+                "id": 7,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "(14/3, −3, 22/3)",
+                    "(−5/3, −7, 1)",
+                    "(2, 3, 1/3)",
+                    "(8/3, −1, 1/3)"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 5,
+                "difficulty": "Unknown",
+                "status": "correct"
+            },
+            {
+                "id": 8,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "2525",
+                    "5220",
+                    "2384",
+                    "2406"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 2,
+                "difficulty": "Unknown",
+                "status": "correct"
+            },
+            {
+                "id": 9,
+                "subject": "Math",
+                "question": "Question text unavailable",
+                "options": [
+                    "628",
+                    "812",
+                    "526",
+                    "784"
+                ],
+                "correctAnswer": -1,
+                "userAnswer": -1,
+                "explanation": "",
+                "timeSpent": 0,
+                "difficulty": "Unknown",
+                "status": "correct"
+            }
+        ],
+        "subjectAnalytics": [
+            {
+                "subject": "Math",
+                "correct": 5,
+                "total": 9,
+                "avgTime": 25.22222222222222,
+                "accuracy": 55.55555555555556,
+                "difficulty": "Unknown",
+                "improvement": 0
+            }
+        ],
+        "sectionAnalytics": [
+            {
+                "sectionIndex": 0,
+                "subject": "Math",
+                "correct": 5,
+                "total": 9,
+                "avgTime": 25.22222222222222,
+                "accuracy": 55.55555555555556
+            }
+        ],
+        "slowestQuestions": [
+            {
+                "sectionIndex": 0,
+                "questionIndex": 0,
+                "selectedAnswer": "A",
+                "answerHistory": [
+                    "B",
+                    "A"
+                ],
+                "isCorrect": true,
+                "timeTaken": 208
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 7,
+                "selectedAnswer": "A",
+                "answerHistory": [
+                    "A"
+                ],
+                "isCorrect": true,
+                "timeTaken": 5
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 3,
+                "selectedAnswer": "B",
+                "answerHistory": [
+                    "B"
+                ],
+                "isCorrect": false,
+                "timeTaken": 4
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 1,
+                "selectedAnswer": "C",
+                "answerHistory": [
+                    "C"
+                ],
+                "isCorrect": true,
+                "timeTaken": 2
+            },
+            {
+                "sectionIndex": 0,
+                "questionIndex": 4,
+                "selectedAnswer": "B",
+                "answerHistory": [
+                    "B"
+                ],
+                "isCorrect": false,
+                "timeTaken": 2
+            }
+        ],
+        "questionAnalysis": {
+            "timeDistribution": [
+                {
+                    "name": "Under 30s",
+                    "value": 8
+                },
+                {
+                    "name": "30s - 1m",
+                    "value": 0
+                },
+                {
+                    "name": "1m - 2m",
+                    "value": 0
+                },
+                {
+                    "name": "Over 2m",
+                    "value": 1
+                }
+            ]
+        },
+        "personalizedRecommendations": [
+            "Math: Consider practicing more problems, focusing on accuracy and time management."
+        ],
+        "previousAttempts": [],
+        "overallImprovement": null
+    }
+}

@@ -116,7 +116,7 @@ const TestDetail = () => {
       console.log("Test submitted successfully!", data);
 
       // For now → just navigate to results page:
-      // window.location.href = `/tests/${id}/results`;
+      window.location.href = `/tests/${id}/results`;
     } catch (err: any) {
       console.error(err);
       alert(err.message || "Failed to submit test.");
