@@ -310,7 +310,7 @@ const TestResults = () => {
                     </div>
                   </div>
 
-                  <div className="w-full md:w-[240px] h-[240px]">
+                  <div className="w-full md:w-[300px] h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -425,7 +425,7 @@ const TestResults = () => {
             onValueChange={setActiveTab}
             className="w-full"
           >
-            <TabsList className="mb-6 p-1 bg-gray-100 rounded-lg w-full md:w-auto">
+            <TabsList className="mb-6 p-1 h-auto bg-gray-100 rounded-lg  flex flex-wrap w-full md:w-auto">
               <TabsTrigger
                 value="overview"
                 className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-brandPurple"
