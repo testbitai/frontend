@@ -310,15 +310,15 @@ const TestResults = () => {
                     </div>
                   </div>
 
-                  <div className="w-full md:w-[300px] h-[300px]">
+                  <div className="w-full md:max-w-[50%] aspect-square">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
                           data={pieData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
+                          innerRadius={50}
+                          outerRadius={65}
                           fill="#8884d8"
                           paddingAngle={2}
                           dataKey="value"
