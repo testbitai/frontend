@@ -32,6 +32,7 @@ import { Link } from "react-router-dom";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { TestGridSkeleton } from "@/components/ui/test-card-skeleton";
 import { UrlStateIndicator } from "@/components/ui/url-state-indicator";
+import { TestCardActions } from "@/components/admin/TestCardActions";
 import { useTests, useDeleteTest, usePrefetchTests, type TestsQueryParams } from "@/hooks/useTests";
 import { useUrlFilters } from "@/hooks/useUrlState";
 
@@ -110,9 +111,7 @@ const TestManagement = () => {
 
   // Handler functions
   const handleDeleteTest = async (testId: string, testTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${testTitle}"?`)) {
-      return;
-    }
+
     deleteTestMutation.mutate(testId);
   };
 
@@ -417,27 +416,11 @@ const TestManagement = () => {
                       </div>
                     )}
 
-                    <div className="flex space-x-2 pt-3">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Eye className="mr-1 h-3 w-3" />
-                        View
-                      </Button>
-                      <Link to={`/admin/tests/edit/${test._id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                          <Edit className="mr-1 h-3 w-3" />
-                          Edit
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDeleteTest(test._id, test.title)}
-                        disabled={isDeleting}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <TestCardActions
+                      test={test}
+                      onDelete={handleDeleteTest}
+                      isDeleting={isDeleting}
+                    />
                   </div>
                 </CardContent>
               </Card>

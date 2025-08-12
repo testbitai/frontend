@@ -24,6 +24,8 @@ import TutorAnalytics from "./pages/tutor/TutorAnalytics";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import TestManagement from "./pages/admin/TestManagement";
+import TestPreview from "./pages/admin/TestPreview";
+import EditTest from "./pages/admin/EditTest";
 import Analytics from "./pages/admin/Analytics";
 import RewardManagement from "./pages/admin/RewardManagement";
 import EventManagement from "./pages/admin/EventManagement";
@@ -37,6 +39,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import TutorSupportManagement from "./pages/tutor/TutorSupportManagement";
 import AdminStudentManagement from "./pages/admin/AdminStudentManagement";
 import TutorManagement from "./pages/admin/TutorManagement";
+import TutorView from "./pages/admin/TutorView";
 import CreateTutorTest from "./pages/tutor/CreateTutorTest";
 import CreateTest from "./pages/admin/CreateTest";
 import StudentGuard from "./guards/StudentGuard";
@@ -138,11 +141,14 @@ const App: React.FC = () => {
                       element={<AdminDashboard />}
                     />
                     <Route path="/admin/tests" element={<TestManagement />} />
+                    <Route path="/admin/tests/preview/:testId" element={<TestPreview />} />
+                    <Route path="/admin/tests/edit/:id" element={<EditTest />} />
                     <Route
                       path="/admin/tests/create"
                       element={<CreateTest />}
                     />
                     <Route path="/admin/tutors" element={<TutorManagement />} />
+                    <Route path="/admin/tutors/view/:tutorId" element={<TutorView />} />
                     <Route
                       path="/admin/students"
                       element={<AdminStudentManagement />}
