@@ -38,6 +38,7 @@ import GuestGuard from "./guards/GuestGuard";
 import VerifyEmail from "./pages/VerifyEmail";
 import TutorSupportManagement from "./pages/tutor/TutorSupportManagement";
 import AdminStudentManagement from "./pages/admin/AdminStudentManagement";
+import StudentView from "./pages/admin/StudentView";
 import TutorManagement from "./pages/admin/TutorManagement";
 import TutorView from "./pages/admin/TutorView";
 import CreateTutorTest from "./pages/tutor/CreateTutorTest";
@@ -153,7 +154,7 @@ const App: React.FC = () => {
                       path="/admin/students"
                       element={<AdminStudentManagement />}
                     />
-                    <Route path="/admin/analytics" element={<Analytics />} />
+                    <Route path="/admin/students/view/:studentId" element={<StudentView />} />                    <Route path="/admin/analytics" element={<Analytics />} />
                     <Route
                       path="/admin/rewards"
                       element={<RewardManagement />}

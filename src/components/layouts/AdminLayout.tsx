@@ -35,7 +35,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: "Test Management", href: "/admin/tests", icon: BookOpen },
     { name: "Tutor Management", href: "/admin/tutors", icon: GraduationCap },
     { name: "Student Management", href: "/admin/students", icon: Users },
-    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    // { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
     { name: "Rewards", href: "/admin/rewards", icon: Trophy },
     { name: "Events", href: "/admin/events", icon: Calendar },
     { name: "Contact", href: "/admin/contact", icon: Mail },

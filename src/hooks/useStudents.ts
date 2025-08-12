@@ -7,6 +7,7 @@ export interface Student {
   name: string;
   email: string;
   phone?: string;
+  avatar?: string;
   profilePicture?: string;
   isActive: boolean;
   examGoal?: 'JEE' | 'BITSAT';
@@ -18,6 +19,7 @@ export interface Student {
     lastActive: Date;
   };
   joinDate: string;
+  createdAt?: string;
   lastActive: string;
   
   // Calculated stats
