@@ -412,3 +412,39 @@ export const useJoinTutor = () => {
     },
   });
 };
+
+// Send mail to student
+export const useSendMailToStudent = () => {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ 
+      studentId, 
+      subject, 
+      message 
+    }: { 
+      studentId: string; 
+      subject: string; 
+      message: string;
+    }) => {
+      const { data } = await apiClient.post(`/tutor/students/${studentId}/send-mail`, {
+        subject,
+        message
+      });
+      return data.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Message Sent",
+        description: "Your message has been sent successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to send message.",
+        variant: "destructive",
+      });
+    },
+  });
+};

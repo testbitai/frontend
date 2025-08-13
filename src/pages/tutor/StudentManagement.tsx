@@ -77,6 +77,7 @@ import {
   useUpdateInvitationStatus,
   useRemoveStudent,
   useResendInvitation,
+  useSendMailToStudent,
   type StudentsQueryParams,
   type InvitationsQueryParams,
 } from "@/hooks/useStudentManagement";
@@ -88,6 +89,9 @@ const StudentManagement = () => {
   // State for dialogs and forms
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showInvitationsDialog, setShowInvitationsDialog] = useState(false);
+  const [showStudentDetailsDialog, setShowStudentDetailsDialog] = useState(false);
+  const [showSendMailDialog, setShowSendMailDialog] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<StudentDetails | null>(null);
   const [inviteMessage, setInviteMessage] = useState("");
   const [inviteExpiry, setInviteExpiry] = useState("7");
   const [studentToRemove, setStudentToRemove] = useState<string | null>(null);
@@ -96,6 +100,8 @@ const StudentManagement = () => {
     action: 'accept' | 'reject';
   } | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [mailSubject, setMailSubject] = useState("");
+  const [mailMessage, setMailMessage] = useState("");
 
   // URL state management for students
   const {
@@ -156,6 +162,7 @@ const StudentManagement = () => {
   const updateInvitationMutation = useUpdateInvitationStatus();
   const removeStudentMutation = useRemoveStudent();
   const resendInvitationMutation = useResendInvitation();
+  const sendMailMutation = useSendMailToStudent();
 
   // Handlers
   const handleGenerateInvite = async () => {
@@ -224,6 +231,44 @@ const StudentManagement = () => {
     }
   };
 
+  const handleViewStudentDetails = (student: StudentDetails) => {
+    setSelectedStudent(student);
+    setShowStudentDetailsDialog(true);
+  };
+
+  const handleSendMail = (student: StudentDetails) => {
+    setSelectedStudent(student);
+    setMailSubject("");
+    setMailMessage("");
+    setShowSendMailDialog(true);
+  };
+
+  const handleSendMailSubmit = async () => {
+    if (!selectedStudent || !mailSubject.trim() || !mailMessage.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in both subject and message.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await sendMailMutation.mutateAsync({
+        studentId: selectedStudent._id,
+        subject: mailSubject,
+        message: mailMessage
+      });
+      
+      setShowSendMailDialog(false);
+      setSelectedStudent(null);
+      setMailSubject("");
+      setMailMessage("");
+    } catch (error) {
+      // Error handled by mutation
+    }
+  };
+
   const handleSort = (field: string, type: 'students' | 'invitations') => {
     if (type === 'students') {
       if (studentSortBy === field) {
@@ -274,7 +319,7 @@ const StudentManagement = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Student Management</h1>
             <p className="text-muted-foreground">
-              Manage your students and invite new ones to join your class
+              Manage student requests and your enrolled students. Students must request to join your class first.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -284,7 +329,7 @@ const StudentManagement = () => {
               className="flex items-center gap-2"
             >
               <Eye className="h-4 w-4" />
-              View Invitations
+              View Requests
             </Button>
             <Button
               onClick={() => setShowInviteDialog(true)}
@@ -319,7 +364,7 @@ const StudentManagement = () => {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                 <Clock className="mr-2 h-4 w-4" />
-                Pending Invites
+                Pending Requests
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -327,7 +372,7 @@ const StudentManagement = () => {
                 {statsLoading ? "..." : statsData?.pendingInvitations || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Awaiting response
+                Awaiting approval
               </p>
             </CardContent>
           </Card>
@@ -424,9 +469,9 @@ const StudentManagement = () => {
         <Dialog open={showInvitationsDialog} onOpenChange={setShowInvitationsDialog}>
           <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Manage Invitations</DialogTitle>
+              <DialogTitle>Student Requests</DialogTitle>
               <DialogDescription>
-                View and manage all student invitations.
+                Review and manage student requests to join your class.
               </DialogDescription>
             </DialogHeader>
             
@@ -438,7 +483,7 @@ const StudentManagement = () => {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Invitations</SelectItem>
+                    <SelectItem value="all">All Requests</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="accepted">Accepted</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
@@ -484,11 +529,11 @@ const StudentManagement = () => {
               ) : invitations.length === 0 ? (
                 <div className="text-center py-8">
                   <Mail className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No invitations found</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No requests found</h3>
                   <p className="text-gray-600">
                     {invitationStatus !== "all" 
-                      ? "No invitations match the selected filter."
-                      : "Generate your first invite to start adding students."}
+                      ? "No student requests match the selected filter."
+                      : "No student requests yet. Share your invite code for students to request access."}
                   </p>
                 </div>
               ) : (
@@ -573,7 +618,7 @@ const StudentManagement = () => {
                   <div className="text-sm text-gray-600">
                     Showing {((invitationsPagination.currentPage - 1) * invitationsPagination.limit) + 1} to{' '}
                     {Math.min(invitationsPagination.currentPage * invitationsPagination.limit, invitationsPagination.totalCount)} of{' '}
-                    {invitationsPagination.totalCount} invitations
+                    {invitationsPagination.totalCount} requests
                   </div>
                   
                   <div className="flex items-center space-x-2">
@@ -676,6 +721,182 @@ const StudentManagement = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Student Details Dialog */}
+        <Dialog open={showStudentDetailsDialog} onOpenChange={setShowStudentDetailsDialog}>
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Student Details</DialogTitle>
+              <DialogDescription>
+                Detailed information about the student
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedStudent && (
+              <div className="space-y-6">
+                {/* Basic Info */}
+                <div className="flex items-start space-x-4">
+                  <img
+                    src={selectedStudent.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedStudent.name)}&background=3b82f6&color=fff`}
+                    alt={selectedStudent.name}
+                    className="h-20 w-20 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-semibold">{selectedStudent.name}</h3>
+                      <Badge className={getStatusColor(selectedStudent.isActive ? 'active' : 'inactive')}>
+                        {selectedStudent.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        {selectedStudent.email}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Joined on {new Date(selectedStudent.joinedAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </div>
+                      {selectedStudent.lastTestDate && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          Last test: {new Date(selectedStudent.lastTestDate).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Performance Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Target className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-600">Tests Completed</span>
+                    </div>
+                    <div className="text-2xl font-bold text-blue-900">{selectedStudent.testsCompleted}</div>
+                  </div>
+                  
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Award className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-600">Average Score</span>
+                    </div>
+                    <div className="text-2xl font-bold text-green-900">{selectedStudent.averageScore}%</div>
+                  </div>
+                  
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <TrendingUp className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm font-medium text-purple-600">Best Score</span>
+                    </div>
+                    <div className="text-2xl font-bold text-purple-900">{selectedStudent.bestScore}%</div>
+                  </div>
+                  
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-yellow-600">🪙</span>
+                      <span className="text-sm font-medium text-yellow-600">Coins</span>
+                    </div>
+                    <div className="text-2xl font-bold text-yellow-900">{selectedStudent.coins}</div>
+                  </div>
+                </div>
+
+                {/* Subject Performance */}
+                {selectedStudent.performance && Object.keys(selectedStudent.performance).length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-3">Subject Performance</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {Object.entries(selectedStudent.performance).map(([subject, score]) => (
+                        <div key={subject} className="border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium">{subject}</span>
+                            <span className="text-sm font-bold">{score}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${score}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Current Streak */}
+                {selectedStudent.currentStreak > 0 && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-orange-600">🔥</span>
+                      <span className="font-medium text-orange-900">
+                        Current Streak: {selectedStudent.currentStreak} days
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Send Mail Dialog */}
+        <Dialog open={showSendMailDialog} onOpenChange={setShowSendMailDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Send Message</DialogTitle>
+              <DialogDescription>
+                Send a message to {selectedStudent?.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="mailSubject">Subject</Label>
+                <Input
+                  id="mailSubject"
+                  placeholder="Enter message subject..."
+                  value={mailSubject}
+                  onChange={(e) => setMailSubject(e.target.value)}
+                  maxLength={200}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {mailSubject.length}/200 characters
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="mailMessage">Message</Label>
+                <Textarea
+                  id="mailMessage"
+                  placeholder="Type your message here..."
+                  value={mailMessage}
+                  onChange={(e) => setMailMessage(e.target.value)}
+                  maxLength={2000}
+                  rows={6}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {mailMessage.length}/2000 characters
+                </p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowSendMailDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSendMailSubmit}
+                disabled={!mailSubject.trim() || !mailMessage.trim() || sendMailMutation.isPending}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                {sendMailMutation.isPending ? "Sending..." : "Send Message"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Students Table */}
         <Card>
@@ -922,11 +1143,11 @@ const StudentManagement = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewStudentDetails(student)}>
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSendMail(student)}>
                               <Mail className="h-4 w-4 mr-2" />
                               Send Message
                             </DropdownMenuItem>
