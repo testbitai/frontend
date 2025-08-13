@@ -173,7 +173,7 @@ const TutorManagement: React.FC = () => {
 
   // Prefetch next page when user is on current page
   useEffect(() => {
-    if (tutorsData?.pagination?.hasNextPage) {
+    if (pagination?.hasNextPage) {
       const nextPageParams = { ...queryParams, page: currentPage + 1 };
       prefetchTutors(nextPageParams);
     }
@@ -299,13 +299,23 @@ const TutorManagement: React.FC = () => {
   };
 
   // Extract data from React Query response
-  const tutors: Tutor[] = tutorsData?.tutors || [];
-  const pagination = tutorsData?.pagination;
+  const tutors: Tutor[] = tutorsData?.results || [];
+  const pagination = {
+    page: tutorsData?.page || 1,
+    limit: tutorsData?.limit || 12,
+    totalPages: tutorsData?.totalPages || 1,
+    totalResults: tutorsData?.totalResults || 0,
+    hasNextPage: (tutorsData?.page || 1) < (tutorsData?.totalPages || 1),
+    hasPrevPage: (tutorsData?.page || 1) > 1,
+  };
   const stats = statsData || {
     totalTutors: 0,
     activeTutors: 0,
     pendingApprovals: 0,
     suspendedTutors: 0,
+    verifiedTutors: 0,
+    unverifiedTutors: 0,
+    inactiveTutors: 0,
     averageRating: 0,
     totalStudentsEnrolled: 0,
     totalTestsCreated: 0,
@@ -349,9 +359,9 @@ const TutorManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalTutors.toLocaleString()}</div>
+                <div className="text-2xl font-bold">{(stats.totalTutors || 0).toLocaleString()}</div>
                 <p className="text-xs text-green-600">
-                  +{stats.monthlyGrowth}% from last month
+                  +{stats.monthlyGrowth || 0}% from last month
                 </p>
               </CardContent>
             </Card>
@@ -363,9 +373,9 @@ const TutorManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.activeTutors.toLocaleString()}</div>
+                <div className="text-2xl font-bold">{(stats.activeTutors || 0).toLocaleString()}</div>
                 <p className="text-xs text-blue-600">
-                  {((stats.activeTutors / stats.totalTutors) * 100).toFixed(1)}% of total
+                  {(((stats.activeTutors || 0) / (stats.totalTutors || 1)) * 100).toFixed(1)}% of total
                 </p>
               </CardContent>
             </Card>
@@ -377,7 +387,7 @@ const TutorManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.pendingApprovals}</div>
+                <div className="text-2xl font-bold">{stats.pendingApprovals || 0}</div>
                 <p className="text-xs text-orange-600">
                   Requires review
                 </p>
@@ -391,9 +401,9 @@ const TutorManagement: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                <div className="text-2xl font-bold">{(stats.averageRating || 0).toFixed(1)}</div>
                 <div className="flex items-center">
-                  {getRatingStars(stats.averageRating)}
+                  {getRatingStars(stats.averageRating || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -602,12 +612,12 @@ const TutorManagement: React.FC = () => {
                   <div className="flex items-start gap-4">
                     <div className="relative">
                       <Avatar className="h-16 w-16">
-                        <AvatarImage src={tutor.profilePicture} alt={tutor.name} />
+                        <AvatarImage src={tutor.avatar} alt={tutor.name} />
                         <AvatarFallback>
                           {tutor.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      {tutor.isVerified && (
+                      {tutor.tutorDetails?.isVerified && (
                         <div className="absolute -top-1 -right-1 bg-blue-500 rounded-full p-1">
                           <Shield className="h-3 w-3 text-white" />
                         </div>
@@ -618,14 +628,14 @@ const TutorManagement: React.FC = () => {
                       <h3 className="font-semibold text-lg truncate">{tutor.name}</h3>
                       <p className="text-sm text-gray-600 truncate">{tutor.email}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge className={getStatusColor(tutor.status)}>
-                          {getStatusIcon(tutor.status)}
-                          <span className="ml-1 capitalize">{tutor.status}</span>
+                        <Badge className={getStatusColor(tutor.tutorDetails?.subscriptionStatus || 'pending')}>
+                          {getStatusIcon(tutor.tutorDetails?.subscriptionStatus || 'pending')}
+                          <span className="ml-1 capitalize">{tutor.tutorDetails?.subscriptionStatus || 'pending'}</span>
                         </Badge>
                         <div className="flex items-center">
-                          {getRatingStars(tutor.rating)}
+                          {getRatingStars(tutor.tutorDetails?.rating || 0)}
                           <span className="ml-1 text-xs text-gray-600">
-                            ({tutor.rating.toFixed(1)})
+                            ({(tutor.tutorDetails?.rating || 0).toFixed(1)})
                           </span>
                         </div>
                       </div>
@@ -636,36 +646,50 @@ const TutorManagement: React.FC = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Experience:</span>
-                      <span className="font-medium">{tutor.experience} years</span>
+                      <span className="font-medium">{tutor.tutorDetails?.experience || 0} years</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Students:</span>
-                      <span className="font-medium">{tutor.totalStudents}</span>
+                      <span className="font-medium">{tutor.tutorDetails?.totalStudents || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Tests Created:</span>
-                      <span className="font-medium">{tutor.testsCreated}</span>
+                      <span className="font-medium">{tutor.tutorDetails?.totalTests || 0}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Joined:</span>
-                      <span className="font-medium">{formatDate(tutor.joinDate)}</span>
+                      <span className="font-medium">{formatDate(tutor.createdAt)}</span>
                     </div>
 
                     {/* Specializations */}
-                    {tutor.specialization && tutor.specialization.length > 0 && (
+                    {tutor.tutorDetails?.subjects && tutor.tutorDetails.subjects.length > 0 && (
                       <div className="text-sm">
-                        <span className="text-gray-600">Specializations:</span>
+                        <span className="text-gray-600">Subjects:</span>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {tutor.specialization.slice(0, 3).map((spec, index) => (
+                          {tutor.tutorDetails.subjects.slice(0, 3).map((subject, index) => (
                             <Badge key={index} variant="secondary" className="text-xs">
-                              {spec}
+                              {subject}
                             </Badge>
                           ))}
-                          {tutor.specialization.length > 3 && (
+                          {tutor.tutorDetails.subjects.length > 3 && (
                             <Badge variant="secondary" className="text-xs">
-                              +{tutor.specialization.length - 3} more
+                              +{tutor.tutorDetails.subjects.length - 3} more
                             </Badge>
                           )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Exam Focus */}
+                    {tutor.examGoals && tutor.examGoals.length > 0 && (
+                      <div className="text-sm">
+                        <span className="text-gray-600">Exam Focus:</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {tutor.examGoals.map((exam, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {exam}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -674,15 +698,15 @@ const TutorManagement: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t">
                       <div className="text-center">
                         <div className="text-lg font-bold text-green-600">
-                          {tutor.performance?.averageStudentScore?.toFixed(1) ?? 'N/A'}%
+                          {tutor.tutorDetails?.rating?.toFixed(1) || '0.0'}
                         </div>
-                        <div className="text-xs text-gray-500">Avg Score</div>
+                        <div className="text-xs text-gray-500">Rating</div>
                       </div>
                       <div className="text-center">
                         <div className="text-lg font-bold text-blue-600">
-                          {tutor.performance?.completionRate?.toFixed(1) ?? 'N/A'}%
+                          {tutor.tutorDetails?.isProfileComplete ? 'Yes' : 'No'}
                         </div>
-                        <div className="text-xs text-gray-500">Completion</div>
+                        <div className="text-xs text-gray-500">Complete</div>
                       </div>
                     </div>
 
@@ -707,7 +731,7 @@ const TutorManagement: React.FC = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
-                          {tutor.status === 'active' ? (
+                          {tutor.tutorDetails?.subscriptionStatus === 'active' ? (
                             <DropdownMenuItem 
                               onClick={() => handleStatusUpdate(tutor._id, 'inactive')}
                               disabled={isOperationPending}
@@ -725,7 +749,7 @@ const TutorManagement: React.FC = () => {
                             </DropdownMenuItem>
                           )}
                           
-                          {tutor.isVerified ? (
+                          {tutor.tutorDetails?.isVerified ? (
                             <DropdownMenuItem 
                               onClick={() => handleVerifyTutor(tutor._id, false)}
                               disabled={isOperationPending}

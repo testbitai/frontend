@@ -6,44 +6,69 @@ export interface Tutor {
   _id: string;
   name: string;
   email: string;
-  phone?: string;
-  profilePicture?: string;
-  status: 'active' | 'inactive' | 'suspended' | 'pending';
   role: 'tutor';
-  specialization: string[];
-  experience: number; // years
-  qualification: string;
+  avatar?: string;
+  examGoals: string[];
+  isEmailVerified: boolean;
+  coins: number;
+  badges: any[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  studyBuddy: {
+    name: string;
+    level: string;
+    style: string;
+  };
+  streak: {
+    count: number;
+    lastActive: string;
+  };
+  tutorDetails: {
+    subjects: string[];
+    subscriptionStatus: 'active' | 'inactive' | 'pending' | 'cancelled';
+    isProfileComplete: boolean;
+    isVerified: boolean;
+    verificationDocuments: any[];
+    totalStudents: number;
+    totalTests: number;
+    rating: number;
+    reviews: any[];
+    examFocus: string[];
+    students: any[];
+    inviteCodes: any[];
+    instituteName?: string;
+    bio?: string;
+    experience?: number;
+    qualifications?: string;
+    phone?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      pincode?: string;
+    };
+    subscriptionStartDate?: string;
+    subscriptionEndDate?: string;
+    paymentId?: string;
+  };
+  
+  // Computed properties for backward compatibility
+  status?: 'active' | 'inactive' | 'suspended' | 'pending';
+  specialization?: string[];
+  experience?: number;
+  qualification?: string;
   bio?: string;
-  rating: number;
-  totalStudents: number;
-  totalTests: number;
-  testsCreated: number;
-  averageRating: number;
-  joinDate: string;
-  lastActive: string;
-  isVerified: boolean;
-  documents?: {
-    resume?: string;
-    certificates?: string[];
-    idProof?: string;
-  };
-  subjects: string[];
-  examTypes: string[];
-  availability: {
-    days: string[];
-    timeSlots: string[];
-  };
-  performance: {
-    studentsEnrolled: number;
-    averageStudentScore: number;
-    completionRate: number;
-    studentSatisfaction: number;
-  };
-  earnings: {
-    totalEarnings: number;
-    monthlyEarnings: number;
-    pendingPayments: number;
-  };
+  rating?: number;
+  totalStudents?: number;
+  totalTests?: number;
+  testsCreated?: number;
+  averageRating?: number;
+  joinDate?: string;
+  lastActive?: string;
+  isVerified?: boolean;
+  subjects?: string[];
+  examTypes?: string[];
 }
 
 export interface TutorStats {

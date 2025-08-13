@@ -260,7 +260,7 @@ const TutorSignup = () => {
   };
 
   const nextStep = () => {
-    if (step < 6) setStep(step + 1);
+    if (step < 5) setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -306,30 +306,16 @@ const TutorSignup = () => {
 
         {/* Progress Indicator */}
         <div className="flex justify-center mb-8">
-          <div className="flex items-center space-x-2">
-            {[
-              { num: 1, label: "Email" },
-              { num: 2, label: "Verify" },
-              { num: 3, label: "Basic" },
-              { num: 4, label: "Professional" },
-              { num: 5, label: "Contact" },
-              { num: 6, label: "Plan" }
-            ].map((stepInfo, index) => (
-              <React.Fragment key={stepInfo.num}>
-                <div className="flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-                    step >= stepInfo.num ? 'bg-blue-500 text-white' : 'bg-gray-200 text-muted-foreground'
-                  }`}>
-                    {step > stepInfo.num ? <CheckCircle className="h-4 w-4" /> : stepInfo.num}
-                  </div>
-                  <span className={`text-xs mt-1 ${
-                    step >= stepInfo.num ? 'text-blue-600 font-medium' : 'text-muted-foreground'
-                  }`}>
-                    {stepInfo.label}
-                  </span>
+          <div className="flex items-center space-x-4">
+            {[1, 2, 3, 4, 5].map((stepNum) => (
+              <React.Fragment key={stepNum}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  step >= stepNum ? 'bg-blue-500 text-white' : 'bg-gray-200 text-muted-foreground'
+                }`}>
+                  {step > stepNum ? <CheckCircle className="h-5 w-5" /> : stepNum}
                 </div>
-                {index < 5 && (
-                  <div className={`w-8 h-1 mt-3 ${step > stepInfo.num ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
+                {stepNum < 5 && (
+                  <div className={`w-16 h-1 ${step > stepNum ? 'bg-blue-500' : 'bg-gray-200'}`}></div>
                 )}
               </React.Fragment>
             ))}
@@ -337,15 +323,15 @@ const TutorSignup = () => {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          {/* Step 1: Email Input */}
+          {/* Step 1: Email Verification */}
           {step === 1 && (
             <Card className="shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl flex items-center justify-center">
                   <Mail className="h-6 w-6 mr-2" />
-                  Enter Your Email
+                  Email Verification
                 </CardTitle>
-                <CardDescription>We'll send you a verification code to get started</CardDescription>
+                <CardDescription>We'll send you a verification code</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
@@ -357,98 +343,46 @@ const TutorSignup = () => {
                     value={formData.email}
                     onChange={(e) => updateFormData('email', e.target.value)}
                     className="text-lg py-3"
-                    disabled={loading}
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Make sure you have access to this email address
-                  </p>
                 </div>
                 
                 <Button 
                   onClick={handleSendOTP}
                   disabled={loading || !formData.email}
                   className="w-full"
-                  size="lg"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                   Send Verification Code
-                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
 
-                <div className="text-center text-sm text-muted-foreground">
-                  Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 2: OTP Verification */}
-          {step === 2 && (
-            <Card className="shadow-xl">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl flex items-center justify-center">
-                  <Shield className="h-6 w-6 mr-2" />
-                  Verify Your Email
-                </CardTitle>
-                <CardDescription>
-                  We've sent a 6-digit code to <strong>{formData.email}</strong>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Verification Code</Label>
+                  <Label htmlFor="otp">Verification Code (6 digits)</Label>
                   <Input 
                     id="otp" 
                     type="text" 
-                    placeholder="Enter 6-digit code"
+                    placeholder="Enter OTP"
                     value={formData.otp}
                     onChange={(e) => updateFormData('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="text-lg py-3 text-center tracking-widest font-mono"
+                    className="text-lg py-3 text-center tracking-widest"
                     maxLength={6}
-                    disabled={loading}
                   />
-                  <p className="text-sm text-muted-foreground text-center">
-                    Code expires in 10 minutes
-                  </p>
                 </div>
                 
                 <Button 
                   onClick={handleVerifyEmail}
                   disabled={loading || !formData.otp || formData.otp.length !== 6}
                   className="w-full"
-                  size="lg"
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Verify Email
+                  Verify & Continue
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
-
-                <div className="text-center space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    Didn't receive the code?
-                  </p>
-                  <Button 
-                    variant="link" 
-                    onClick={handleResendOTP}
-                    disabled={loading}
-                    className="p-0 h-auto text-blue-600"
-                  >
-                    Resend Code
-                  </Button>
-                </div>
-
-                <div className="flex justify-between">
-                  <Button variant="outline" onClick={prevStep} disabled={loading}>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Step 3: Basic Information */}
-          {step === 3 && (
+          {/* Step 2: Basic Information */}
+          {step === 2 && (
             <Card className="shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl flex items-center justify-center">
@@ -534,8 +468,8 @@ const TutorSignup = () => {
             </Card>
           )}
 
-          {/* Step 4: Professional Details */}
-          {step === 4 && (
+          {/* Step 3: Professional Details */}
+          {step === 3 && (
             <Card className="shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl flex items-center justify-center">
@@ -639,8 +573,8 @@ const TutorSignup = () => {
             </Card>
           )}
 
-          {/* Step 5: Contact Information */}
-          {step === 5 && (
+          {/* Step 4: Contact Information */}
+          {step === 4 && (
             <Card className="shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl flex items-center justify-center">
@@ -719,8 +653,8 @@ const TutorSignup = () => {
             </Card>
           )}
 
-          {/* Step 6: Plan Selection */}
-          {step === 6 && (
+          {/* Step 5: Plan Selection */}
+          {step === 5 && (
             <Card className="shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl flex items-center justify-center">
