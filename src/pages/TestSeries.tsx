@@ -114,15 +114,36 @@ const TestSeries = () => {
   const [filterDifficulty, setFilterDifficulty] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
 
-   const [tests, setTests] = useState([]);
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchTests = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const { data } = await apiClient.get("/test");
-      console.log(data);
-      setTests(data.data);
+      console.log("API Response:", data);
+      
+      // Handle the actual API response structure
+      if (data && data.success && Array.isArray(data.data?.tests)) {
+        setTests(data.data.tests);
+      } else if (data && Array.isArray(data.data)) {
+        // Fallback for different response structure
+        setTests(data.data);
+      } else if (data && Array.isArray(data)) {
+        // Direct array response
+        setTests(data);
+      } else {
+        console.warn("API response does not contain tests array:", data);
+        setTests([]); // Fallback to empty array
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching tests:", error);
+      setError(error.message || "Failed to fetch tests");
+      setTests([]); // Ensure tests is always an array even on error
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,22 +152,40 @@ const TestSeries = () => {
   }, []);
 
   // Filter tests based on tab, search, and filters
-  const filteredTests = tests.filter((test) => {
-    // Filter by tab/type
-    if (activeTab !== "all" && test.type !== activeTab) return false;
+  // Add defensive check to ensure tests is an array
+  const filteredTests = (Array.isArray(tests) ? tests : []).filter((test) => {
+    // Filter by tab/type - map tab values to API type values
+    if (activeTab !== "all") {
+      const typeMapping = {
+        "full": "fullMock",
+        "chapter": "chapterWise", 
+        "daily": "dailyQuiz",
+        "event": "themedEvent"
+      };
+      const apiType = typeMapping[activeTab] || activeTab;
+      if (test.type !== apiType) return false;
+    }
 
     // Filter by search query
     if (
       searchQuery &&
-      !test.title.toLowerCase().includes(searchQuery.toLowerCase())
+      !test.title?.toLowerCase().includes(searchQuery.toLowerCase())
     )
       return false;
 
-    // Filter by subject
-    if (filterSubject !== "all" && test.subject !== filterSubject) return false;
+    // Filter by subject - check if subject exists in subjectCount
+    if (filterSubject !== "all") {
+      const subjectMapping = {
+        "physics": "Physics",
+        "chemistry": "Chemistry", 
+        "mathematics": "Math"
+      };
+      const apiSubject = subjectMapping[filterSubject] || filterSubject;
+      if (!test.subjectCount || !test.subjectCount[apiSubject]) return false;
+    }
 
     // Filter by difficulty
-    if (filterDifficulty !== "all" && test.difficulty !== filterDifficulty)
+    if (filterDifficulty !== "all" && test.overallDifficulty !== filterDifficulty)
       return false;
 
     return true;
@@ -327,10 +366,30 @@ const TestSeries = () => {
                   <div className="h-8 w-1 bg-gradient-to-b from-brandGreen to-brandIndigo rounded-full mr-3"></div>
                   <h2 className="text-xl font-semibold">Available Tests</h2>
                 </div>
-                {tests.length > 0 ? (
+                
+                {loading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {tests.map((test) => (
-                      <TestCard key={test.id} test={test} />
+                    {[...Array(6)].map((_, index) => (
+                      <div key={index} className="animate-pulse">
+                        <div className="bg-gray-200 dark:bg-gray-700 rounded-lg h-48"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : error ? (
+                  <div className="text-center py-12">
+                    <div className="text-red-500 mb-4">
+                      <AlertCircle className="h-12 w-12 mx-auto mb-2" />
+                      <p className="text-lg font-medium">Error loading tests</p>
+                      <p className="text-sm text-gray-600">{error}</p>
+                    </div>
+                    <Button onClick={fetchTests} variant="outline">
+                      Try Again
+                    </Button>
+                  </div>
+                ) : filteredTests.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredTests.map((test) => (
+                      <TestCard key={test._id || test.id} test={test} />
                     ))}
                   </div>
                 ) : (
@@ -368,6 +427,11 @@ interface TestCardProps {
 }
 
 const TestCard: React.FC<TestCardProps> = ({ test }) => {
+  // Add defensive checks for test object
+  if (!test) {
+    return null;
+  }
+
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "full":
@@ -443,7 +507,7 @@ const TestCard: React.FC<TestCardProps> = ({ test }) => {
           <div className="mx-auto h-full bg-white shadow-sm mb-4">
             <img
               src={'https://images.unsplash.com/photo-1598981457915-aea220950616?q=80&w=2093&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-              alt={test.name}
+              alt={test.name || test.title || 'Test'}
               className="aspect-video w-full object-cover"
             />
           </div>
@@ -451,15 +515,15 @@ const TestCard: React.FC<TestCardProps> = ({ test }) => {
 
         <div className="p-5">
           <h3 className="font-semibold text-lg line-clamp-2 mb-2 group-hover:text-brandPurple transition-colors">
-            {test.title}
+            {test.title || test.name || 'Untitled Test'}
           </h3>
 
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge
               variant="outline"
-              className={`${getDifficultyColor(test.overallDifficulty)}`}
+              className={`${getDifficultyColor(test.overallDifficulty || 'Medium')}`}
             >
-              {test.overallDifficulty}
+              {test.overallDifficulty || 'Medium'}
             </Badge>
             <Badge
               variant="outline"

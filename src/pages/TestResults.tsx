@@ -24,6 +24,7 @@ import {
   Share,
   RotateCcw,
   Calendar,
+  Brain,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -50,6 +51,7 @@ import {
 } from "@/components/ui/table";
 import ReviewAnswers from "@/components/ReviewAnswersPage";
 import DetailedAnalysis from "@/components/DetailedAnalysis";
+import AIDetailedAnalysis from "@/components/AIDetailedAnalysis";
 
 // Mock results data for the test
 
@@ -88,9 +90,10 @@ const TestResults = () => {
 
         const apiData = data.data;
 
-        console.log(data);
+        console.log(apiData._id);
 
         const transformedResult = {
+          _id: apiData._id,
           score: apiData.score,
           testName: apiData.test.title || "Test Name",
           totalQuestions: apiData.totalQuestions,
@@ -457,6 +460,13 @@ const TestResults = () => {
               >
                 Detailed Analysis
               </TabsTrigger>
+              <TabsTrigger
+                value="ai-analysis"
+                className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:shadow-sm data-[state=active]:text-brandPurple flex items-center gap-2"
+              >
+                <Brain className="h-4 w-4" />
+                AI Analysis
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-0">
@@ -711,6 +721,10 @@ const TestResults = () => {
             
             <TabsContent value="detailed" className="mt-0">
               <DetailedAnalysis />
+            </TabsContent>
+            
+            <TabsContent value="ai-analysis" className="mt-0">
+              <AIDetailedAnalysis testAttemptId={result._id || ''} />
             </TabsContent>
           </Tabs>
 
