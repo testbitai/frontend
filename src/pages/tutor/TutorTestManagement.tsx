@@ -19,24 +19,32 @@ import {
 import {
   Plus,
   Search,
-  Edit,
-  Trash2,
-  Eye,
   ChevronLeft,
   ChevronRight,
   SortAsc,
   SortDesc,
   BookOpen,
+  TrendingUp,
+  Users,
+  Clock,
+  Target,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import TutorLayout from "@/components/layouts/TutorLayout";
 import { TestGridSkeleton } from "@/components/ui/test-card-skeleton";
 import { UrlStateIndicator } from "@/components/ui/url-state-indicator";
-import { TestCardActions } from "@/components/admin/TestCardActions";
-import { useTests, useDeleteTest, usePrefetchTests, type TestsQueryParams } from "@/hooks/useTests";
+import { TutorTestCardActions } from "@/components/tutor/TutorTestCardActions";
+import { 
+  useTutorTests, 
+  useDeleteTutorTest, 
+  usePrefetchTutorTests, 
+  useTutorTestStats,
+  useToggleTestPublication,
+  type TutorTestsQueryParams 
+} from "@/hooks/useTutorTests";
 import { useUrlFilters } from "@/hooks/useUrlState";
-import TutorLayout from "@/components/layouts/TutorLayout";
 
-const TestManagement = () => {
+const TutorTestManagement = () => {
   // URL state management for all filters and pagination
   const {
     searchTerm,
@@ -44,7 +52,6 @@ const TestManagement = () => {
     filterExamType,
     filterSubject,
     filterDifficulty,
-    filterCreatedBy,
     sortBy,
     sortOrder,
     currentPage,
@@ -54,7 +61,6 @@ const TestManagement = () => {
     setFilterExamType,
     setFilterSubject,
     setFilterDifficulty,
-    setFilterCreatedBy,
     setSortBy,
     setSortOrder,
     setCurrentPage,
@@ -64,7 +70,7 @@ const TestManagement = () => {
   } = useUrlFilters();
 
   // Memoized query parameters for React Query
-  const queryParams: TestsQueryParams = useMemo(() => ({
+  const queryParams: TutorTestsQueryParams = useMemo(() => ({
     page: currentPage,
     limit,
     search: searchTerm,
@@ -72,7 +78,6 @@ const TestManagement = () => {
     examType: filterExamType !== "all" ? filterExamType : undefined,
     subject: filterSubject !== "all" ? filterSubject : undefined,
     difficulty: filterDifficulty !== "all" ? filterDifficulty : undefined,
-    createdByRole: filterCreatedBy !== "all" ? filterCreatedBy : undefined,
     sortBy,
     sortOrder,
   }), [
@@ -83,15 +88,16 @@ const TestManagement = () => {
     filterExamType,
     filterSubject,
     filterDifficulty,
-    filterCreatedBy,
     sortBy,
     sortOrder,
   ]);
 
   // React Query hooks
-  const { data: testsData, isLoading, error, isFetching } = useTests(queryParams);
-  const deleteTestMutation = useDeleteTest();
-  const prefetchTests = usePrefetchTests();
+  const { data: testsData, isLoading, error, isFetching } = useTutorTests(queryParams);
+  const { data: statsData, isLoading: isStatsLoading } = useTutorTestStats();
+  const deleteTestMutation = useDeleteTutorTest();
+  const togglePublicationMutation = useToggleTestPublication();
+  const prefetchTests = usePrefetchTutorTests();
 
   // Reset page when filters change (not search, as it's handled by URL state)
   useEffect(() => {
@@ -99,7 +105,7 @@ const TestManagement = () => {
     if (currentPage !== 1) {
       resetPage();
     }
-  }, [filterType, filterExamType, filterSubject, filterDifficulty, filterCreatedBy, sortBy, sortOrder]);
+  }, [filterType, filterExamType, filterSubject, filterDifficulty, sortBy, sortOrder]);
 
   // Prefetch next page when user is on current page
   useEffect(() => {
@@ -111,8 +117,11 @@ const TestManagement = () => {
 
   // Handler functions
   const handleDeleteTest = async (testId: string, testTitle: string) => {
-
     deleteTestMutation.mutate(testId);
+  };
+
+  const handleTogglePublication = async (testId: string, isPublished: boolean) => {
+    togglePublicationMutation.mutate({ testId, isPublished });
   };
 
   const getStatusColor = (status: string) => {
@@ -160,6 +169,7 @@ const TestManagement = () => {
   const tests = testsData?.tests || [];
   const pagination = testsData?.pagination;
   const isDeleting = deleteTestMutation.isPending;
+  const isUpdating = togglePublicationMutation.isPending;
 
   return (
     <TutorLayout>
@@ -171,7 +181,7 @@ const TestManagement = () => {
               Test Management
             </h1>
             <p className="text-muted-foreground">
-              Create, edit, and manage all tests
+              Create, edit, and manage tests for your students
               {pagination && (
                 <span className="ml-2">
                   ({pagination.totalCount} total tests)
@@ -185,6 +195,62 @@ const TestManagement = () => {
               Create New Test
             </Button>
           </Link>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Total Tests
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isStatsLoading ? "..." : statsData?.totalTests || 0}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <Target className="mr-2 h-4 w-4" />
+                Active Tests
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isStatsLoading ? "..." : statsData?.activeTests || 0}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <Users className="mr-2 h-4 w-4" />
+                Total Attempts
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isStatsLoading ? "..." : statsData?.totalAttempts || 0}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                Avg Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {isStatsLoading ? "..." : `${statsData?.averageScore || 0}%`}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters */}
@@ -238,7 +304,6 @@ const TestManagement = () => {
                   <SelectItem value="all">All Exams</SelectItem>
                   <SelectItem value="JEE">JEE</SelectItem>
                   <SelectItem value="BITSAT">BITSAT</SelectItem>
-                  <SelectItem value="NEET">NEET</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -254,7 +319,6 @@ const TestManagement = () => {
                   <SelectItem value="Physics">Physics</SelectItem>
                   <SelectItem value="Chemistry">Chemistry</SelectItem>
                   <SelectItem value="Mathematics">Mathematics</SelectItem>
-                  <SelectItem value="Biology">Biology</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -271,8 +335,6 @@ const TestManagement = () => {
                 </SelectContent>
               </Select>
 
-      
-
               {/* Items per page */}
               <Select value={limit.toString()} onValueChange={(value) => setLimit(parseInt(value))}>
                 <SelectTrigger>
@@ -285,6 +347,9 @@ const TestManagement = () => {
                   <SelectItem value="48">48 per page</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Placeholder for future filters */}
+              <div></div>
             </div>
 
             {/* Sort Options */}
@@ -380,15 +445,16 @@ const TestManagement = () => {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Created by:</span>
-                      <span className="font-medium">
-                        {test.createdBy?.name || 'Unknown'} ({test.createdByRole})
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Created:</span>
                       <span className="font-medium">
                         {new Date(test.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Duration:</span>
+                      <span className="font-medium flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {test.duration} minutes
                       </span>
                     </div>
 
@@ -406,10 +472,12 @@ const TestManagement = () => {
                       </div>
                     )}
 
-                    <TestCardActions
+                    <TutorTestCardActions
                       test={test}
                       onDelete={handleDeleteTest}
+                      onTogglePublication={handleTogglePublication}
                       isDeleting={isDeleting}
+                      isUpdating={isUpdating}
                     />
                   </div>
                 </CardContent>
@@ -428,16 +496,16 @@ const TestManagement = () => {
               </h3>
               <p className="text-gray-600 mb-4">
                 {searchTerm || filterType !== "all" || filterExamType !== "all" || 
-                 filterSubject !== "all" || filterDifficulty !== "all" || filterCreatedBy !== "all"
+                 filterSubject !== "all" || filterDifficulty !== "all"
                   ? "Try adjusting your search or filter criteria."
-                  : "Get started by creating your first test."}
+                  : "Get started by creating your first test for your students."}
               </p>
               {!searchTerm && filterType === "all" && filterExamType === "all" && 
-               filterSubject === "all" && filterDifficulty === "all" && filterCreatedBy === "all" && (
+               filterSubject === "all" && filterDifficulty === "all" && (
                 <Link to="/tutor/tests/create">
                   <Button>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create New Test
+                    Create Your First Test
                   </Button>
                 </Link>
               )}
@@ -500,7 +568,7 @@ const TestManagement = () => {
                     size="sm"
                     onClick={() => handlePageChange(pagination.currentPage + 1)}
                     disabled={!pagination.hasNextPage || isFetching}
-                  >
+                    >
                     Next
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -514,4 +582,4 @@ const TestManagement = () => {
   );
 };
 
-export default TestManagement;
+export default TutorTestManagement;

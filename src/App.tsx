@@ -47,6 +47,8 @@ import StudentGuard from "./guards/StudentGuard";
 import TutorGuard from "./guards/TutorGuard";
 import AdminGuard from "./guards/AdminGuard";
 import SupportTickets from "./pages/SupportTickets";
+import TutorTestPreview from "./pages/tutor/TutorTestPreview";
+import TutorTestAnalytics from "./pages/tutor/TutorTestAnalytics";
 import ContactManagement from "./pages/admin/ContactManagement";
 
 // Create a client
@@ -123,6 +125,15 @@ const App: React.FC = () => {
                       element={<CreateTutorTest />}
                     />
                     <Route
+                      path="/tutor/tests/analytics/:testId"
+                      element={<TutorTestAnalytics />}
+                    />
+                     <Route
+                      path="/tutor/tests/preview/:testId"
+                      element={<TutorTestPreview />}
+                    />
+
+                    <Route
                       path="/tutor/students"
                       element={<StudentManagement />}
                     />
@@ -142,19 +153,32 @@ const App: React.FC = () => {
                       element={<AdminDashboard />}
                     />
                     <Route path="/admin/tests" element={<TestManagement />} />
-                    <Route path="/admin/tests/preview/:testId" element={<TestPreview />} />
-                    <Route path="/admin/tests/edit/:id" element={<EditTest />} />
+                    <Route
+                      path="/admin/tests/preview/:testId"
+                      element={<TestPreview />}
+                    />
+                    <Route
+                      path="/admin/tests/edit/:id"
+                      element={<EditTest />}
+                    />
                     <Route
                       path="/admin/tests/create"
                       element={<CreateTest />}
                     />
                     <Route path="/admin/tutors" element={<TutorManagement />} />
-                    <Route path="/admin/tutors/view/:tutorId" element={<TutorView />} />
+                    <Route
+                      path="/admin/tutors/view/:tutorId"
+                      element={<TutorView />}
+                    />
                     <Route
                       path="/admin/students"
                       element={<AdminStudentManagement />}
                     />
-                    <Route path="/admin/students/view/:studentId" element={<StudentView />} />                    <Route path="/admin/analytics" element={<Analytics />} />
+                    <Route
+                      path="/admin/students/view/:studentId"
+                      element={<StudentView />}
+                    />{" "}
+                    <Route path="/admin/analytics" element={<Analytics />} />
                     <Route
                       path="/admin/rewards"
                       element={<RewardManagement />}

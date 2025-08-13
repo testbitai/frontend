@@ -82,40 +82,22 @@ export const TutorTestCardActions: React.FC<TutorTestCardActionsProps> = ({
 
   return (
     <>
-      <div className="flex items-center justify-between pt-3">
-        {/* Publication Status */}
-        <div className="flex items-center gap-2">
-          <Badge
-            variant={test.isPublished ? "default" : "secondary"}
-            className={`text-xs ${
-              test.isPublished
-                ? "bg-green-100 text-green-800 hover:bg-green-200"
-                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-            }`}
-          >
-            {test.isPublished ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Published
-              </>
-            ) : (
-              <>
-                <XCircle className="w-3 h-3 mr-1" />
-                Draft
-              </>
-            )}
-          </Badge>
-          
-          {test.allowedStudents && test.allowedStudents.length > 0 && (
-            <Badge variant="outline" className="text-xs">
-              <Users className="w-3 h-3 mr-1" />
-              {test.allowedStudents.length} students
-            </Badge>
-          )}
-        </div>
-
-        {/* Actions Dropdown */}
-        <DropdownMenu>
+ 
+      {/* Quick Action Buttons */}
+      <div className="flex space-x-2 mt-3">
+        <Button variant="outline" size="sm" className="flex-1" asChild>
+          <Link to={`/tutor/tests/preview/${test._id}`}>
+            <Eye className="mr-1 h-3 w-3" />
+            Preview
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="flex-1" asChild>
+          <Link to={`/tutor/tests/edit/${test._id}`}>
+            <Edit className="mr-1 h-3 w-3" />
+            Edit
+          </Link>
+        </Button>
+           <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -214,28 +196,6 @@ export const TutorTestCardActions: React.FC<TutorTestCardActionsProps> = ({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      {/* Quick Action Buttons */}
-      <div className="flex space-x-2 mt-3">
-        <Button variant="outline" size="sm" className="flex-1" asChild>
-          <Link to={`/tutor/tests/preview/${test._id}`}>
-            <Eye className="mr-1 h-3 w-3" />
-            Preview
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="flex-1" asChild>
-          <Link to={`/tutor/tests/edit/${test._id}`}>
-            <Edit className="mr-1 h-3 w-3" />
-            Edit
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" className="flex-1" asChild>
-          <Link to={`/tutor/tests/analytics/${test._id}`}>
-            <BarChart3 className="mr-1 h-3 w-3" />
-            Stats
-          </Link>
-        </Button>
       </div>
 
       {/* Delete Confirmation Dialog */}
