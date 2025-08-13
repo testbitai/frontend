@@ -47,6 +47,7 @@ import StudentGuard from "./guards/StudentGuard";
 import TutorGuard from "./guards/TutorGuard";
 import AdminGuard from "./guards/AdminGuard";
 import SupportTickets from "./pages/SupportTickets";
+import JoinTutor from "./pages/JoinTutor";
 import TutorTestPreview from "./pages/tutor/TutorTestPreview";
 import TutorTestAnalytics from "./pages/tutor/TutorTestAnalytics";
 import ContactManagement from "./pages/admin/ContactManagement";
@@ -92,7 +93,7 @@ const App: React.FC = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/join/:inviteCode" element={<JoinTutor />} />                <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="" element={<GuestGuard />}>
                   <Route path="/login" element={<Login />} />
                 </Route>

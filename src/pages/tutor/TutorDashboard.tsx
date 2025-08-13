@@ -161,7 +161,7 @@ const TutorDashboard = () => {
         </div>
 
         {/* Verification Alert */}
-        {!user?.tutorDetails?.isVerified && (
+        {/* {!user?.tutorDetails?.isVerified && (
           <Alert className="border-yellow-200 bg-yellow-50">
             <AlertCircle className="h-4 w-4 text-yellow-600" />
             <AlertTitle className="text-yellow-800">Account Under Review</AlertTitle>
@@ -171,7 +171,7 @@ const TutorDashboard = () => {
               This process typically takes 1-2 business days.
             </AlertDescription>
           </Alert>
-        )}
+        )} */}
 
         {/* Subscription Alert */}
         {user?.tutorDetails?.subscriptionStatus === 'pending' && (

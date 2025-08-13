@@ -59,17 +59,22 @@ export const useUrlState = <T = string>(
 /**
  * Hook specifically for managing multiple URL states for filters
  */
-export const useUrlFilters = () => {
-  const [searchTerm, setSearchTerm] = useUrlState('search', { defaultValue: '' });
-  const [filterType, setFilterType] = useUrlState('type', { defaultValue: 'all' });
-  const [filterExamType, setFilterExamType] = useUrlState('examType', { defaultValue: 'all' });
-  const [filterSubject, setFilterSubject] = useUrlState('subject', { defaultValue: 'all' });
-  const [filterDifficulty, setFilterDifficulty] = useUrlState('difficulty', { defaultValue: 'all' });
-  const [filterCreatedBy, setFilterCreatedBy] = useUrlState('createdBy', { defaultValue: 'all' });
-  const [sortBy, setSortBy] = useUrlState('sortBy', { defaultValue: 'createdAt' });
-  const [sortOrder, setSortOrder] = useUrlState('sortOrder', { defaultValue: 'desc' });
+export const useUrlFilters = (prefix?: string) => {
+  const getKey = (key: string) => prefix ? `${prefix}_${key}` : key;
   
-  const [currentPage, setCurrentPage] = useUrlState('page', {
+  const [searchTerm, setSearchTerm] = useUrlState(getKey('search'), { defaultValue: '' });
+  const [filterType, setFilterType] = useUrlState(getKey('type'), { defaultValue: 'all' });
+  const [filterExamType, setFilterExamType] = useUrlState(getKey('examType'), { defaultValue: 'all' });
+  const [filterSubject, setFilterSubject] = useUrlState(getKey('subject'), { defaultValue: 'all' });
+  const [filterDifficulty, setFilterDifficulty] = useUrlState(getKey('difficulty'), { defaultValue: 'all' });
+  const [filterCreatedBy, setFilterCreatedBy] = useUrlState(getKey('createdBy'), { defaultValue: 'all' });
+  
+  // Default sortBy based on context
+  const defaultSortBy = prefix === 'students' ? 'joinedAt' : 'createdAt';
+  const [sortBy, setSortBy] = useUrlState(getKey('sortBy'), { defaultValue: defaultSortBy });
+  const [sortOrder, setSortOrder] = useUrlState(getKey('sortOrder'), { defaultValue: 'desc' });
+  
+  const [currentPage, setCurrentPage] = useUrlState(getKey('page'), {
     defaultValue: 1,
     serialize: (value: number) => value.toString(),
     deserialize: (value: string) => {
@@ -78,7 +83,7 @@ export const useUrlFilters = () => {
     }
   });
   
-  const [limit, setLimit] = useUrlState('limit', {
+  const [limit, setLimit] = useUrlState(getKey('limit'), {
     defaultValue: 12,
     serialize: (value: number) => value.toString(),
     deserialize: (value: string) => {
@@ -96,7 +101,7 @@ export const useUrlFilters = () => {
     setFilterSubject('all');
     setFilterDifficulty('all');
     setFilterCreatedBy('all');
-    setSortBy('createdAt');
+    setSortBy(defaultSortBy);
     setSortOrder('desc');
     setCurrentPage(1);
     setLimit(12);
@@ -110,7 +115,8 @@ export const useUrlFilters = () => {
     setSortBy,
     setSortOrder,
     setCurrentPage,
-    setLimit
+    setLimit,
+    defaultSortBy
   ]);
 
   // Reset page when filters change (except page and limit)
