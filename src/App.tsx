@@ -51,6 +51,8 @@ import JoinTutor from "./pages/JoinTutor";
 import TutorTestPreview from "./pages/tutor/TutorTestPreview";
 import TutorTestAnalytics from "./pages/tutor/TutorTestAnalytics";
 import ContactManagement from "./pages/admin/ContactManagement";
+import ExamHistory from "./pages/ExamHistory";
+import TestHistory from "./pages/TestHistory";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -93,7 +95,8 @@ const App: React.FC = () => {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/join/:inviteCode" element={<JoinTutor />} />                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/join/:inviteCode" element={<JoinTutor />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="" element={<GuestGuard />}>
                   <Route path="/login" element={<Login />} />
                 </Route>
@@ -109,6 +112,14 @@ const App: React.FC = () => {
                     <Route
                       path="/tests/:id/results"
                       element={<TestResults />}
+                    />
+                    <Route
+                      path="/exam-history/:testId"
+                      element={<ExamHistory />}
+                    />
+                    <Route
+                      path="/test-history"
+                      element={<TestHistory />}
                     />
                   </Route>
 
@@ -200,16 +211,10 @@ const App: React.FC = () => {
                   </Route>
                 </Route>
 
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/tutor/signup" element={<TutorSignup />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-
-                {/* Tutor */}
-                <Route path="/tutor/signup" element={<TutorSignup />} />
-
-                {/* Admin */}
-                {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
-
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuthStore } from "@/stores/authStore";
 import { ModeToggle } from "./mode-toggle";
 
-const STUDENT_ROUTES = ["/dashboard", "/rewards", "/tests"];
+const STUDENT_ROUTES = ["/dashboard", "/rewards", "/tests", '/test-history', '/exam-history/:testId', '/tests/:id', '/tests/:id/results'];
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -136,6 +136,18 @@ const Header = () => {
                     className="text-muted-foreground hover:text-brandPurple"
                   >
                     Dashboard
+                  </Link>
+                  <Link
+                    to="/tests"
+                    className="text-muted-foreground hover:text-brandPurple"
+                  >
+                    Tests
+                  </Link>
+                  <Link
+                    to="/test-history"
+                    className="text-muted-foreground hover:text-brandPurple"
+                  >
+                    Tests History
                   </Link>
                   <Link
                     to="/rewards"

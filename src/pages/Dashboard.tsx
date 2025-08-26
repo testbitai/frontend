@@ -12,7 +12,6 @@ import { useAuthStore } from '@/stores/authStore';
 const Dashboard = () => {
   const user = useAuthStore((state) => state.user);
 
-  console.log(user)
   // Mock data
   const userData = {
     name: 'Ashadu',

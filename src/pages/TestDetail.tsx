@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -18,12 +18,17 @@ import {
   Star,
   ArrowLeft,
   ArrowRight,
+  History,
+  RotateCcw,
 } from "lucide-react";
 import { formatEquation, cn } from "@/lib/utils";
 import apiClient from "@/lib/apiClient";
+import { useTestAttemptCount } from "@/hooks/useTestAttempts";
+import { toast } from "sonner";
 
 const TestDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<"details" | "test">("details");
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -49,6 +54,9 @@ const TestDetail = () => {
   const [test, setTest] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Get attempt count for this test
+  const { data: attemptData, isLoading: attemptLoading } = useTestAttemptCount(id || "");
 
   useEffect(() => {
     const fetchTestDetails = async () => {
@@ -182,10 +190,20 @@ const TestDetail = () => {
   // };
 
   const startTest = () => {
+    // Check if user has reached attempt limit
+    if (attemptData && attemptData.remainingAttempts <= 0) {
+      toast.error("You have reached the maximum attempt limit (3 attempts) for this test.");
+      return;
+    }
+
     setTimeRemaining(test.duration * 60);
     setCurrentView("test");
     setCurrentSection(test.sections[0]?.id);
     setLastQuestionTimestamp(Date.now());
+  };
+
+  const handleViewHistory = () => {
+    navigate(`/exam-history/${id}`);
   };
 
   const finalizeTimers = () => {
@@ -307,7 +325,7 @@ const TestDetail = () => {
         focusMode ? "bg-background" : "bg-muted"
       }`}
     >
-      {!focusMode && <Header />}
+      {/* {!focusMode && <Header />} */}
 
       <main className="flex-grow py-4">
         <div className="container mx-auto px-4">
@@ -325,16 +343,47 @@ const TestDetail = () => {
                 <div>
                   <h1 className="text-2xl font-bold mb-2">{test.title}</h1>
                   <p className="text-muted-forgroud mb-4">{test.description}</p>
+                  
+                  {/* Attempt Information */}
+                  {attemptData && !attemptLoading && (
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex items-center gap-2">
+                        <RotateCcw className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm text-muted-foreground">
+                          Attempts: {attemptData.count}/{attemptData.maxAttempts}
+                        </span>
+                      </div>
+                      {attemptData.count > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleViewHistory}
+                          className="flex items-center gap-2"
+                        >
+                          <History className="h-4 w-4" />
+                          View Exam History
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div className="mt-4 md:mt-0">
+                <div className="mt-4 md:mt-0 flex flex-col gap-2">
                   {!test.isPurchased ? (
-                    <Button
-                      className="bg-gradient-to-r from-brandIndigo to-brandPurple"
-                      onClick={startTest}
-                    >
-                      Start Test
-                    </Button>
+                    <>
+                      <Button
+                        className="bg-gradient-to-r from-brandIndigo to-brandPurple"
+                        onClick={startTest}
+                        disabled={attemptData?.remainingAttempts === 0}
+                      >
+                        {attemptData?.remainingAttempts === 0 ? "Max Attempts Reached" : "Start Test"}
+                      </Button>
+                      {attemptData && attemptData.remainingAttempts > 0 && (
+                        <p className="text-xs text-center text-muted-foreground">
+                          {attemptData.remainingAttempts} attempt{attemptData.remainingAttempts !== 1 ? 's' : ''} remaining
+                        </p>
+                      )}
+                    </>
                   ) : (
                     <div className="text-center">
                       <div className="flex items-center justify-center text-lg font-semibold text-brandPurple mb-2">
@@ -429,7 +478,7 @@ const TestDetail = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-4">
+                    {/* <div className="flex items-center space-x-4">
                       <Button
                         variant="outline"
                         size="sm"
@@ -442,7 +491,7 @@ const TestDetail = () => {
                       >
                         {focusMode ? "Exit Focus Mode" : "Focus Mode"}
                       </Button>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
@@ -667,7 +716,7 @@ const TestDetail = () => {
         </div>
       </main>
 
-      {!focusMode && <Footer />}
+      {/* {!focusMode && <Footer />} */}
     </div>
   );
 };

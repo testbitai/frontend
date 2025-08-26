@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import {
@@ -25,6 +26,9 @@ import {
   RotateCcw,
   Calendar,
   Brain,
+  TrendingUp,
+  TrendingDown,
+  Minus,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -41,6 +45,8 @@ import {
 } from "recharts";
 import apiClient from "@/lib/apiClient";
 import { useAuthStore } from "@/stores/authStore";
+import { useAllTestAttempts } from "@/hooks/useTestAttempts";
+import { formatDistanceToNow } from "date-fns";
 import {
   Table,
   TableBody,
@@ -72,21 +78,57 @@ const getMotivationalMessage = (score: number) => {
 
 const TestResults = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("overview");
   const [testResult, setTestResult] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedAttemptId, setSelectedAttemptId] = useState<string>("");
   const { user } = useAuthStore();
+
+  // Get all attempts for this test
+  const { data: allAttempts, isLoading: attemptsLoading } = useAllTestAttempts(id || "");
+
+  // Get specific attempt ID from URL params
+  const attemptIdFromUrl = searchParams.get("attemptId");
+
+  useEffect(() => {
+    if (allAttempts && allAttempts.length > 0) {
+      // Use attempt ID from URL if provided, otherwise use the latest attempt
+      const targetAttemptId = attemptIdFromUrl || allAttempts[allAttempts.length - 1]._id;
+      setSelectedAttemptId(targetAttemptId);
+    }
+  }, [allAttempts, attemptIdFromUrl]);
+
+  const getTrendIcon = (currentScore: number, previousScore?: number) => {
+    if (!previousScore) return <Minus className="h-4 w-4 text-gray-400" />;
+    if (currentScore > previousScore) return <TrendingUp className="h-4 w-4 text-green-500" />;
+    if (currentScore < previousScore) return <TrendingDown className="h-4 w-4 text-red-500" />;
+    return <Minus className="h-4 w-4 text-gray-400" />;
+  };
+
+  const handleAttemptChange = (attemptId: string) => {
+    setSelectedAttemptId(attemptId);
+    setSearchParams({ attemptId });
+  };
 
   // Calculate percentages for pie chart
 
   useEffect(() => {
     const fetchTestHistory = async () => {
+      if (!selectedAttemptId) return;
+      
       try {
         setLoading(true);
         setError(null);
 
-        const { data } = await apiClient.get(`/test/test-history/${id}`);
+        // If we have a specific attempt ID, fetch that attempt's results
+        // Otherwise, fetch the default test results (latest attempt)
+        const endpoint = selectedAttemptId && selectedAttemptId !== allAttempts?.[allAttempts.length - 1]?._id
+          ? `/test/test-history/${id}?attemptId=${selectedAttemptId}`
+          : `/test/test-history/${id}`;
+
+        const { data } = await apiClient.get(endpoint);
 
         const apiData = data.data;
 
@@ -105,6 +147,7 @@ const TestResults = () => {
           wrongAnswers: apiData.incorrectCount,
           skipped: apiData.skippedCount,
           timeTaken: apiData.totalTimeTaken,
+          attemptedAt: apiData.attemptedAt,
           percentile: 100 - apiData.scorePercent,
           badge:
             apiData.scorePercent >= 80
@@ -141,10 +184,10 @@ const TestResults = () => {
       }
     };
 
-    if (id) {
+    if (id && selectedAttemptId) {
       fetchTestHistory();
     }
-  }, [id]);
+  }, [id, selectedAttemptId, allAttempts]);
 
   const result = testResult;
 
@@ -220,29 +263,109 @@ const TestResults = () => {
               </div>
 
               <div className="flex items-center space-x-3 mt-4 md:mt-0">
-                <Badge
-                  variant="outline"
-                  className="flex items-center space-x-1"
-                >
-                  <RotateCcw className="h-3 w-3" />
+                {/* Attempt Selector */}
+                {allAttempts && allAttempts.length > 1 && (
+                  <div className="flex items-center gap-3">
+                    <Select value={selectedAttemptId} onValueChange={handleAttemptChange}>
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Select attempt" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allAttempts.map((attempt, index) => {
+                          const attemptNumber = index + 1;
+                          const previousAttempt = index > 0 ? allAttempts[index - 1] : undefined;
+                          
+                          return (
+                            <SelectItem key={attempt._id} value={attempt._id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>Attempt #{attemptNumber}</span>
+                                <div className="flex items-center gap-2 ml-4">
+                                  <span className="text-sm font-medium">
+                                    {attempt.scorePercent.toFixed(1)}%
+                                  </span>
+                                  {getTrendIcon(attempt.scorePercent, previousAttempt?.scorePercent)}
+                                </div>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Show comparison with previous attempt */}
+                    {(() => {
+                      const currentIndex = allAttempts.findIndex(a => a._id === selectedAttemptId);
+                      const currentAttempt = allAttempts[currentIndex];
+                      const previousAttempt = currentIndex > 0 ? allAttempts[currentIndex - 1] : undefined;
+                      
+                      if (previousAttempt && currentAttempt) {
+                        const improvement = currentAttempt.scorePercent - previousAttempt.scorePercent;
+                        return (
+                          <Badge 
+                            variant={improvement > 0 ? "default" : improvement < 0 ? "destructive" : "secondary"}
+                            className="flex items-center gap-1"
+                          >
+                            {improvement > 0 ? (
+                              <TrendingUp className="h-3 w-3" />
+                            ) : improvement < 0 ? (
+                              <TrendingDown className="h-3 w-3" />
+                            ) : (
+                              <Minus className="h-3 w-3" />
+                            )}
+                            {improvement > 0 ? '+' : ''}{improvement.toFixed(1)}%
+                          </Badge>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                )}
+                
+                <Badge variant="outline" className="flex items-center space-x-1">
+                  <Calendar className="h-3 w-3" />
                   <span>
-                    {/* Attempt {result.attempt} of {result.maxAttempts} */}
+                    {result?.attemptedAt && formatDistanceToNow(new Date(result.attemptedAt), { addSuffix: true })}
                   </span>
                 </Badge>
-
-                {/* {result.previousAttempts.length > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    Previous:{" "}
-                    {
-                      result.previousAttempts[
-                        result.previousAttempts.length - 1
-                      ].score
-                    }
-                    %
-                  </Badge>
-                )} */}
               </div>
             </div>
+            
+            {/* Attempt Summary for multiple attempts */}
+            {allAttempts && allAttempts.length > 1 && (
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+                <h3 className="text-sm font-medium mb-3">All Attempts Summary</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Total Attempts</p>
+                    <p className="font-semibold">{allAttempts.length}/3</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Best Score</p>
+                    <p className="font-semibold text-green-600">
+                      {Math.max(...allAttempts.map(a => a.scorePercent)).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Average Score</p>
+                    <p className="font-semibold">
+                      {(allAttempts.reduce((sum, a) => sum + a.scorePercent, 0) / allAttempts.length).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Improvement</p>
+                    <p className="font-semibold">
+                      {allAttempts.length > 1 ? (
+                        <>
+                          {(allAttempts[allAttempts.length - 1].scorePercent - allAttempts[0].scorePercent).toFixed(1)}%
+                        </>
+                      ) : (
+                        'N/A'
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
