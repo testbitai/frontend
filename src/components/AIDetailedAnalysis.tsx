@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -83,9 +83,13 @@ const AIDetailedAnalysis: React.FC<AIDetailedAnalysisProps> = ({ testAttemptId }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const hasFetched = useRef(false);
 
   const fetchAIAnalysis = async () => {
+    if (hasFetched.current) return;
+    
     try {
+      hasFetched.current = true;
       setLoading(true);
       setError(null);
       
@@ -97,6 +101,7 @@ const AIDetailedAnalysis: React.FC<AIDetailedAnalysisProps> = ({ testAttemptId }
         description: "Your personalized analysis is ready!",
       });
     } catch (err: any) {
+      hasFetched.current = false; // Reset on error to allow retry
       const errorMessage = err.response?.data?.message || 'Failed to generate AI analysis';
       setError(errorMessage);
       toast({
@@ -110,7 +115,7 @@ const AIDetailedAnalysis: React.FC<AIDetailedAnalysisProps> = ({ testAttemptId }
   };
 
   useEffect(() => {
-    if (testAttemptId) {
+    if (testAttemptId && !hasFetched.current) {
       fetchAIAnalysis();
     }
   }, [testAttemptId]);
@@ -177,7 +182,10 @@ const AIDetailedAnalysis: React.FC<AIDetailedAnalysisProps> = ({ testAttemptId }
             </AlertDescription>
           </Alert>
           <Button 
-            onClick={fetchAIAnalysis} 
+            onClick={() => {
+              hasFetched.current = false;
+              fetchAIAnalysis();
+            }} 
             className="mt-4"
             variant="outline"
           >
