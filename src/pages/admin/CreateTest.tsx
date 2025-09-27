@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Upload, Save, ArrowLeft } from "lucide-react";
+import { Plus, Upload, Save, ArrowLeft, Trash2, Image } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +51,7 @@ export interface Question {
   correctAnswer: string;
   explanation?: string;
   difficulty: "Easy" | "Medium" | "Hard";
+  image?: string;
 }
 
 // Section Interface
@@ -71,11 +72,11 @@ const CreateTest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSaveTest = async () => {
-    if (!testDetails.title || !testDetails.examType) {
+  const handleSubmit = async () => {
+    if (!testDetails.title || !testDetails.examType || !testDetails.type || !testDetails.duration) {
       toast({
         title: "Missing Information",
-        description: "Please fill in the test title and exam type.",
+        description: "Please fill in all required test details.",
         variant: "destructive",
       });
       return;
@@ -114,6 +115,11 @@ const CreateTest = () => {
     setSections([...sections, newSection]);
   };
 
+  const removeSection = (sectionIndex: number) => {
+    const updatedSections = sections.filter((_, index) => index !== sectionIndex);
+    setSections(updatedSections);
+  };
+
   const addQuestionToSection = (sectionIndex: number) => {
     const newQuestion: Question = {
       questionText: "",
@@ -121,10 +127,17 @@ const CreateTest = () => {
       correctAnswer: "",
       difficulty: "Medium",
       explanation: "",
+      image: "",
     };
 
     const updatedSections = [...sections];
     updatedSections[sectionIndex].questions.push(newQuestion);
+    setSections(updatedSections);
+  };
+
+  const removeQuestionFromSection = (sectionIndex: number, questionIndex: number) => {
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex].questions = updatedSections[sectionIndex].questions.filter((_, index) => index !== questionIndex);
     setSections(updatedSections);
   };
 
@@ -149,15 +162,13 @@ const CreateTest = () => {
               </p>
             </div>
           </div>
-          <Button
-            onClick={handleSaveTest}
-            className="bg-green-600 hover:bg-green-700"
-          >
+          <Button onClick={handleSubmit}>
             <Save className="mr-2 h-4 w-4" />
             Save Test
           </Button>
         </div>
 
+        {/* Main Content */}
         <Tabs defaultValue="details" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details">Test Details</TabsTrigger>
@@ -169,27 +180,26 @@ const CreateTest = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Test Information</CardTitle>
-                <CardDescription>Basic details about your test</CardDescription>
+                <CardDescription>
+                  Basic information about your test
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Test Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., JEE Main Physics Mock Test 1"
-                      value={testDetails.title}
-                      onChange={(e) =>
-                        setTestDetails({
-                          ...testDetails,
-                          title: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="title">Test Title</Label>
+                  <Input
+                    id="title"
+                    placeholder="e.g., JEE Main Mock Test - Physics & Chemistry"
+                    value={testDetails.title}
+                    onChange={(e) =>
+                      setTestDetails({ ...testDetails, title: e.target.value })
+                    }
+                  />
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="examType">Exam Type *</Label>
+                    <Label htmlFor="examType">Exam Type</Label>
                     <Select
                       value={testDetails.examType}
                       onValueChange={(value) =>
@@ -339,6 +349,14 @@ const CreateTest = () => {
                             <CardTitle className="text-lg">
                               {section.subject} Section
                             </CardTitle>
+                            <Button
+                              onClick={() => removeSection(sectionIndex)}
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </CardHeader>
                         <CardContent>
@@ -352,9 +370,19 @@ const CreateTest = () => {
                                 (question, questionIndex) => (
                                   <Card key={questionIndex} className="border">
                                     <CardHeader>
-                                      <CardTitle className="text-base">
-                                        Question {questionIndex + 1}
-                                      </CardTitle>
+                                      <div className="flex items-center justify-between">
+                                        <CardTitle className="text-base">
+                                          Question {questionIndex + 1}
+                                        </CardTitle>
+                                        <Button
+                                          onClick={() => removeQuestionFromSection(sectionIndex, questionIndex)}
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-red-600 hover:text-red-700"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                       <div className="space-y-2">
@@ -369,6 +397,63 @@ const CreateTest = () => {
                                             setSections(updatedSections);
                                           }}
                                         />
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <Label>Question Image (Optional)</Label>
+                                        <div className="flex items-center space-x-2">
+                                          <Input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const formData = new FormData();
+                                                formData.append('image', file);
+                                                
+                                                try {
+                                                  const response = await apiClient.post('/test/upload-image', formData, {
+                                                    headers: {
+                                                      'Content-Type': 'multipart/form-data',
+                                                    },
+                                                  });
+                                                  
+                                                  const updatedSections = [...sections];
+                                                  updatedSections[sectionIndex].questions[questionIndex].image = response.data.data.imageUrl;
+                                                  setSections(updatedSections);
+                                                } catch (error) {
+                                                  toast({
+                                                    title: "Upload Failed",
+                                                    description: "Failed to upload image. Please try again.",
+                                                    variant: "destructive",
+                                                  });
+                                                }
+                                              }
+                                            }}
+                                            className="flex-1"
+                                          />
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              const updatedSections = [...sections];
+                                              updatedSections[sectionIndex].questions[questionIndex].image = "";
+                                              setSections(updatedSections);
+                                            }}
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                        {question.image && (
+                                          <div className="mt-2">
+                                            <img
+                                              src={`http://localhost:5001${question.image}`}
+                                              alt="Question"
+                                              className="max-w-full h-auto max-h-48 rounded border"
+                                            />
+                                          </div>
+                                        )}
                                       </div>
 
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

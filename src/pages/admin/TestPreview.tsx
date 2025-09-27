@@ -42,6 +42,9 @@ const TestPreview = () => {
     }
   }, [testId, navigate]);
 
+  // Extract questions early to avoid initialization issues
+  const questions = testData?.questions || [];
+
   // Keyboard navigation for questions
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -161,7 +164,6 @@ const TestPreview = () => {
     return `${mins}m`;
   };
 
-  const questions = testData.questions || [];
   const currentQuestion = questions[selectedQuestion];
 
   return (
@@ -311,6 +313,15 @@ const TestPreview = () => {
                           <p className="text-sm leading-relaxed bg-gray-50 p-4 rounded-lg">
                             {currentQuestion.questionText}
                           </p>
+                          {currentQuestion.image && (
+                            <div className="mt-3">
+                              <img
+                                src={`http://localhost:5001${currentQuestion.image}`}
+                                alt="Question"
+                                className="max-w-full h-auto max-h-64 rounded border"
+                              />
+                            </div>
+                          )}
                         </div>
 
                         {/* Options */}
