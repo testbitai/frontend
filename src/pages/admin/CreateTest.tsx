@@ -52,6 +52,7 @@ export interface Question {
   explanation?: string;
   difficulty: "Easy" | "Medium" | "Hard";
   image?: string;
+  sectionName?: string;
 }
 
 // Section Interface
@@ -122,24 +123,52 @@ const CreateTest = () => {
 
       const { questions } = response.data.data;
 
-      // Group questions by subject (assuming Physics for now)
-      const newSection: Section = {
-        subject: Subject.PHYSICS,
-        questions: questions.map((q: any) => ({
+      // Group questions by sectionName
+      const sectionMap = new Map<string, Question[]>();
+      
+      questions.forEach((q: any) => {
+        const sectionName = q.sectionName || "General";
+        const question: Question = {
           questionText: q.questionText,
           options: q.options,
           correctAnswer: q.correctAnswer,
           difficulty: q.difficulty,
           explanation: q.explanation || "",
-          image: ""
-        }))
-      };
+          image: "",
+          sectionName: q.sectionName
+        };
 
-      setSections([newSection]);
+        if (!sectionMap.has(sectionName)) {
+          sectionMap.set(sectionName, []);
+        }
+        sectionMap.get(sectionName)!.push(question);
+      });
+
+      // Convert to sections array
+      const newSections: Section[] = Array.from(sectionMap.entries()).map(([sectionName, questions]) => {
+        // Map section name to Subject enum
+        let subject: Subject;
+        if (sectionName.toLowerCase().includes('physics')) {
+          subject = Subject.PHYSICS;
+        } else if (sectionName.toLowerCase().includes('chemistry')) {
+          subject = Subject.CHEMISTRY;
+        } else if (sectionName.toLowerCase().includes('math')) {
+          subject = Subject.MATH;
+        } else {
+          subject = Subject.PHYSICS; // Default
+        }
+
+        return {
+          subject,
+          questions
+        };
+      });
+
+      setSections(newSections);
 
       toast({
         title: "Success",
-        description: `Extracted ${questions.length} questions from PDF`,
+        description: `Extracted ${questions.length} questions from PDF grouped into ${newSections.length} sections`,
       });
     } catch (error) {
       toast({
