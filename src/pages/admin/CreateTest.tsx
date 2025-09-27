@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Upload, Save, ArrowLeft, Trash2, Image } from "lucide-react";
+import { Plus, Upload, Save, ArrowLeft, Trash2, Image, FileText } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import AdminLayout from "@/components/layouts/AdminLayout";
 import { useToast } from "@/hooks/use-toast";
@@ -69,6 +69,7 @@ const CreateTest = () => {
     duration: "",
   });
   const [sections, setSections] = useState<Section[]>([]);
+  const [isExtracting, setIsExtracting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -104,6 +105,50 @@ const CreateTest = () => {
         description: error?.response?.data?.message || "Something went wrong.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handlePDFExtraction = async (file: File) => {
+    setIsExtracting(true);
+    try {
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      const response = await apiClient.post('/test/extract-pdf', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const { questions } = response.data.data;
+
+      // Group questions by subject (assuming Physics for now)
+      const newSection: Section = {
+        subject: Subject.PHYSICS,
+        questions: questions.map((q: any) => ({
+          questionText: q.questionText,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          difficulty: q.difficulty,
+          explanation: q.explanation || "",
+          image: ""
+        }))
+      };
+
+      setSections([newSection]);
+
+      toast({
+        title: "Success",
+        description: `Extracted ${questions.length} questions from PDF`,
+      });
+    } catch (error) {
+      toast({
+        title: "Extraction Failed",
+        description: "Failed to extract questions from PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtracting(false);
     }
   };
 
@@ -170,10 +215,9 @@ const CreateTest = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="details" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="details">Test Details</TabsTrigger>
             <TabsTrigger value="sections">Sections & Questions</TabsTrigger>
-            <TabsTrigger value="upload">PDF Upload</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details">
@@ -280,8 +324,62 @@ const CreateTest = () => {
             </Card>
           </TabsContent>
 
+
+
           <TabsContent value="sections">
             <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  AI Question Extraction
+                </CardTitle>
+                <CardDescription>
+                  Upload a PDF with questions and let AI extract them automatically
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Upload PDF</Label>
+                    <Input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handlePDFExtraction(file);
+                        }
+                      }}
+                      disabled={isExtracting}
+                    />
+                  </div>
+                  {isExtracting && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      Extracting questions from PDF...
+                    </div>
+                  )}
+                  <div className="text-sm text-muted-foreground">
+                    <p>• Supported format: PDF files</p>
+                  </div>
+
+                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-medium mb-2">Expected PDF Format & Output:</h4>
+                    <div className="text-sm text-gray-600 space-y-2">
+                      <div>
+                        <p><strong>PDF Format Example:</strong></p>
+                        <p>Q1. What is the capital of France?</p>
+                        <p>(A) London (B) Berlin (C) Paris (D) Madrid</p>
+                        <p><em>Answer: C</em></p>
+                        <p><em>Explanation: Paris is the capital and largest city of France.</em></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-5">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -421,7 +519,7 @@ const CreateTest = () => {
                                                   const updatedSections = [...sections];
                                                   updatedSections[sectionIndex].questions[questionIndex].image = response.data.data.imageUrl;
                                                   setSections(updatedSections);
-                                                  
+
                                                   toast({
                                                     title: "Image Uploaded",
                                                     description: "Image uploaded successfully.",
@@ -446,7 +544,7 @@ const CreateTest = () => {
                                                 const updatedSections = [...sections];
                                                 updatedSections[sectionIndex].questions[questionIndex].image = "";
                                                 setSections(updatedSections);
-                                                
+
                                                 toast({
                                                   title: "Image Removed",
                                                   description: "Image removed from question.",
@@ -602,48 +700,7 @@ const CreateTest = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle>PDF Upload</CardTitle>
-                <CardDescription>
-                  Upload a PDF file containing test questions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-gray-400 transition-colors">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Upload Test PDF
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Drag and drop your PDF file here, or click to browse
-                  </p>
-                  <Button variant="outline">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Choose File
-                  </Button>
-                  <p className="text-sm text-gray-500 mt-4">
-                    Supported formats: PDF (max 10MB)
-                  </p>
-                </div>
 
-                <div className="mt-6">
-                  <h4 className="font-medium text-gray-900 mb-2">
-                    Upload Guidelines
-                  </h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>
-                      • Ensure questions are clearly numbered and formatted
-                    </li>
-                    <li>• Include multiple choice options (A, B, C, D)</li>
-                    <li>• Mark correct answers clearly</li>
-                    <li>• PDF will be reviewed before publishing</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
     </AdminLayout>
