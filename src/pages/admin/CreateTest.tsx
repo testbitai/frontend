@@ -410,17 +410,22 @@ const CreateTest = () => {
                                               if (file) {
                                                 const formData = new FormData();
                                                 formData.append('image', file);
-                                                
+
                                                 try {
                                                   const response = await apiClient.post('/test/upload-image', formData, {
                                                     headers: {
                                                       'Content-Type': 'multipart/form-data',
                                                     },
                                                   });
-                                                  
+
                                                   const updatedSections = [...sections];
                                                   updatedSections[sectionIndex].questions[questionIndex].image = response.data.data.imageUrl;
                                                   setSections(updatedSections);
+                                                  
+                                                  toast({
+                                                    title: "Image Uploaded",
+                                                    description: "Image uploaded successfully.",
+                                                  });
                                                 } catch (error) {
                                                   toast({
                                                     title: "Upload Failed",
@@ -432,18 +437,25 @@ const CreateTest = () => {
                                             }}
                                             className="flex-1"
                                           />
-                                          <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                              const updatedSections = [...sections];
-                                              updatedSections[sectionIndex].questions[questionIndex].image = "";
-                                              setSections(updatedSections);
-                                            }}
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
+                                          {question.image && (
+                                            <Button
+                                              type="button"
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => {
+                                                const updatedSections = [...sections];
+                                                updatedSections[sectionIndex].questions[questionIndex].image = "";
+                                                setSections(updatedSections);
+                                                
+                                                toast({
+                                                  title: "Image Removed",
+                                                  description: "Image removed from question.",
+                                                });
+                                              }}
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          )}
                                         </div>
                                         {question.image && (
                                           <div className="mt-2">

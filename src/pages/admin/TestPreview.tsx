@@ -496,7 +496,7 @@ const TestPreview = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {Object.entries(testData.subjectCount).map(([subject, count]) => (
                       <div key={subject} className="text-center p-4 bg-gray-50 rounded-lg">
-                        <div className="text-3xl font-bold text-primary">{count}</div>
+                        {/* <div className="text-3xl font-bold text-primary">{count}</div> */}
                         <div className="text-sm text-muted-foreground mt-1">{subject}</div>
                       </div>
                     ))}
@@ -515,7 +515,7 @@ const TestPreview = () => {
                   <div className="grid grid-cols-3 gap-4">
                     {Object.entries(testData.difficultyCount).map(([difficulty, count]) => (
                       <div key={difficulty} className="text-center p-4 bg-gray-50 rounded-lg">
-                        <div className="text-3xl font-bold text-primary">{count}</div>
+                        {/* <div className="text-3xl font-bold text-primary">{count}</div> */}
                         <Badge className={`mt-2 ${getStatusColor(difficulty)}`}>
                           {difficulty}
                         </Badge>
