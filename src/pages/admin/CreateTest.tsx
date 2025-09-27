@@ -587,7 +587,7 @@ const CreateTest = () => {
                                         {question.image && (
                                           <div className="mt-2">
                                             <img
-                                              src={`http://localhost:5001${question.image}`}
+                                              src={import.meta.env.VITE_API_BASE_URL+ currentQuestion.image}
                                               alt="Question"
                                               className="max-w-full h-auto max-h-48 rounded border"
                                             />

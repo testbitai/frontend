@@ -316,7 +316,7 @@ const TestPreview = () => {
                           {currentQuestion.image && (
                             <div className="mt-3">
                               <img
-                                src={`http://localhost:5001${currentQuestion.image}`}
+                                src={import.meta.env.VITE_API_BASE_URL+ currentQuestion.image}
                                 alt="Question"
                                 className="max-w-full h-auto max-h-64 rounded border"
                               />
